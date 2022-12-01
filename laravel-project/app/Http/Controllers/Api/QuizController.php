@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Models\Quiz;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
@@ -29,7 +31,12 @@ class QuizController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Todo: ログインしたユーザーを使用した処理にする
+        // $user = Auth::user();
+        $user = User::first();
+        $quiz = $user->quizzes()->create(['commentary' => $request->commentary]);
+
+        return response()->json($quiz, Response::HTTP_CREATED);
     }
 
     /**

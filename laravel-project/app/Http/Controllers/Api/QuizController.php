@@ -70,6 +70,9 @@ class QuizController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $quiz = Quiz::find($id);
+        $quiz->delete();
+
+        return response()->json($quiz);
     }
 }

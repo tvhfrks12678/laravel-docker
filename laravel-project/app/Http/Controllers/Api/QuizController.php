@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
 {
+    const ELOQUENT_SELECT_COLUMN = ["INDEX" => ['id', 'commentary'], "SHOW" => ['commentary']];
+
     /**
      * Display a listing of the resource.
      *
@@ -18,8 +20,10 @@ class QuizController extends Controller
      */
     public function index()
     {
-        $selectColums = ['id', 'commentary'];
-        $quizzes = Quiz::get($selectColums);
+        // Todo: ログインしたユーザーを使用した処理にする
+        // $user = Auth::user();
+        $user = User::first();
+        $quizzes = $user->quizzes()->get(self::ELOQUENT_SELECT_COLUMN["INDEX"]);
         return response()->json($quizzes);
     }
 
@@ -47,7 +51,9 @@ class QuizController extends Controller
      */
     public function show($id)
     {
-        //
+        $quiz = Quiz::select(self::ELOQUENT_SELECT_COLUMN["SHOW"])->find($id);
+
+        return response()->json($quiz);
     }
 
     /**

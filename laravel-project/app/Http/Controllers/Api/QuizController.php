@@ -65,7 +65,9 @@ class QuizController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $quiz = Quiz::find($id);
+        $quiz->update($request->all());
+        return response()->json($quiz);
     }
 
     /**

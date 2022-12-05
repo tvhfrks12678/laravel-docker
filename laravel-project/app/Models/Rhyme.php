@@ -10,4 +10,9 @@ class Rhyme extends Model
     use HasFactory;
 
     protected $fillable = ['content'];
+
+    public function choices()
+    {
+        return $this->hasMany(Choice::class);
+    }
 }

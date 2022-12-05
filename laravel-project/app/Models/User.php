@@ -45,7 +45,6 @@ class User extends Authenticatable
     /**
      * ユーザーのクイズを取得
      *
-     * @return void
      */
     public function quizzes()
     {

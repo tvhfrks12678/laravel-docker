@@ -18,4 +18,9 @@ class Quiz extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function choices()
+    {
+        return $this->hasMany(Choice::class);
+    }
 }

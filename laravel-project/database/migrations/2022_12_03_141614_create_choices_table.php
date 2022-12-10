@@ -20,6 +20,7 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
             $table->foreignId('rhyme_id')
+                ->nullable()
                 ->constrained()
                 ->cascadeOnUpdate();
             $table->string('content');

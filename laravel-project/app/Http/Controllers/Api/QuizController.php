@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Models\Quiz;
 use App\Models\User;
+use App\Models\Quiz;
+use App\Models\Rhyme;
 use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
@@ -38,7 +39,21 @@ class QuizController extends Controller
         // Todo: ログインしたユーザーを使用した処理にする
         // $user = Auth::user();
         $user = User::first();
-        $quiz = $user->quizzes()->create(['commentary' => $request->commentary]);
+        $inputQuiz = $request->quiz;
+        $quiz = $user->quizzes()->create(['commentary' => $inputQuiz['commentary']]);
+
+        $inputChoices = $inputQuiz['choices'];
+
+        foreach ($inputChoices as $inputChoice) {
+            $inputRhyme = $inputChoice['rhyme'];
+
+            $rhyme = Rhyme::firstOrNew(['content' => $inputRhyme]);
+            if ($inputRhyme != "") {
+                $rhyme->save();
+            }
+
+            $quiz->choices()->create(['content' => $inputChoice['content'], 'rhyme_id' => $rhyme->id]);
+        }
 
         return response()->json($quiz, Response::HTTP_CREATED);
     }

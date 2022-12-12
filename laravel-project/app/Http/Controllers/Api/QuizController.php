@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use App\Models\User;
 use App\Models\Quiz;
 use App\Models\Rhyme;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class QuizController extends Controller
@@ -40,20 +41,24 @@ class QuizController extends Controller
         // $user = Auth::user();
         $user = User::first();
         $inputQuiz = $request->quiz;
-        $quiz = $user->quizzes()->create(['commentary' => $inputQuiz['commentary']]);
 
-        $inputChoices = $inputQuiz['choices'];
+        $quiz = DB::transaction(static function () use ($inputQuiz, $user): Quiz {
+            $quiz = $user->quizzes()->create(['commentary' => $inputQuiz['commentary']]);
 
-        foreach ($inputChoices as $inputChoice) {
-            $inputRhyme = $inputChoice['rhyme'];
+            $inputChoices = $inputQuiz['choices'];
 
-            $rhyme = Rhyme::firstOrNew(['content' => $inputRhyme]);
-            if ($inputRhyme != "") {
-                $rhyme->save();
+            foreach ($inputChoices as $inputChoice) {
+                $inputRhyme = $inputChoice['rhyme'];
+
+                $rhyme = Rhyme::firstOrNew(['content' => $inputRhyme]);
+                if ($inputRhyme != "") {
+                    $rhyme->save();
+                }
+
+                $quiz->choices()->create(['content' => $inputChoice['content'], 'rhyme_id' => $rhyme->id]);
             }
-
-            $quiz->choices()->create(['content' => $inputChoice['content'], 'rhyme_id' => $rhyme->id]);
-        }
+            return $quiz;
+        });
 
         return response()->json($quiz, Response::HTTP_CREATED);
     }

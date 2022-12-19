@@ -85,9 +85,40 @@ class QuizController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $quiz = Quiz::find($id);
-        $quiz->update($request->all());
-        return response()->json($quiz);
+        $quiz = Quiz::with('choices')->find($id);
+        $inputQuiz = $request->quiz;
+
+        DB::transaction(static function () use ($inputQuiz, $quiz): void {
+            $previouslyRegisteredChoices = $quiz->choices;
+            $inputChoices = $inputQuiz['choices'];
+            $countExistingChoices = count($quiz->choices) - 1;
+            $countUpdatedChoices = 0;
+
+            $quiz->update(['commentary' => $inputQuiz['commentary']]);
+
+            foreach ($inputChoices as $inputChoice) {
+                $inputRhyme = $inputChoice['rhyme'];
+                $rhyme = Rhyme::firstOrNew(['content' => $inputRhyme]);
+                if ($inputRhyme != "") {
+                    $rhyme->save();
+                }
+                if ($countUpdatedChoices > $countExistingChoices) {
+                    $quiz->choices()->create(['content' => $inputChoice['content'], 'rhyme_id' => $rhyme->id]);
+                    continue;
+                }
+                $choice = $previouslyRegisteredChoices[$countUpdatedChoices];
+                $choice->content = $inputChoice['content'];
+                $choice->rhyme_id = $rhyme->id;
+                $choice->save();
+                $countUpdatedChoices++;
+            }
+
+            for ($i = $countUpdatedChoices - 1; $i < $countExistingChoices; $i++) {
+                $previouslyRegisteredChoices[$i]->delete();
+            }
+        });
+
+        return response()->json(Quiz::with('choices')->find($id));
     }
 
     /**
